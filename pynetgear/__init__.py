@@ -47,20 +47,19 @@ class Netgear(object):
 
         return self.logged_in
     
-    def get_network_settings(self):
+    def get_network_password(self):
         """
         Return the network settings
         """
         _LOGGER.info("Get Network Settings")
         success, response = self._make_request(
-            ACTION_GET_NETWORK_SETTIGNS,
-            SOAP_NETWORK_SETTINGS.format(session_id=SESSION_ID))
+            ACTION_GET_NETWORK_PASSWORD,
+            SOAP_NETWORK_PASSWORD.format(session_id=SESSION_ID))
         
         if not success:
             return None
-        data = re.search(r"<NewWPAPassphrase>(.*)</NewWAPPassphrase>",
-                         response).group(1).split(";")
-        return data
+        data = re.search(r"<NewWPAPassphrase>(.*)</NewWPAPassphrase>",response)
+        return data.string[data.start():data.end()].replace(r"<NewWPAPassphrase>","").replace(r"</NewWPAPassphrase>","")
     
     def get_attached_devices(self):
         """
@@ -168,7 +167,7 @@ def convert(value, to_type, default=None):
 ACTION_LOGIN = "urn:NETGEAR-ROUTER:service:ParentalControl:1#Authenticate"
 ACTION_GET_ATTACHED_DEVICES = \
     "urn:NETGEAR-ROUTER:service:DeviceInfo:1#GetAttachDevice"
-ACTION_GET_NETWORK_SETTINGS = "urn:NETGEAR-ROUTER:service:WLANConfiguration:1#GetWPASecurityKeys"
+ACTION_GET_NETWORK_PASSWORD = "urn:NETGEAR-ROUTER:service:WLANConfiguration:1#GetWPASecurityKeys"
 
 # Until we know how to generate it, give the one we captured
 SESSION_ID = "A7D88AE69687E58D9A00"
@@ -201,7 +200,7 @@ SOAP_ATTACHED_DEVICES = """<?xml version="1.0" encoding="utf-8" standalone="no"?
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 """
-SOAP_NETWORK_SETTINGS = """<SOAP-ENV:Envelope xmlns:SOAPSDK1="http://www.w3.org/2001/XMLSchema" 
+SOAP_NETWORK_PASSWORD = """<SOAP-ENV:Envelope xmlns:SOAPSDK1="http://www.w3.org/2001/XMLSchema" 
   xmlns:SOAPSDK2="http://www.w3.org/2001/XMLSchema-instance" 
   xmlns:SOAPSDK3="http://schemas.xmlsoap.org/soap/encoding/" 
   xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
