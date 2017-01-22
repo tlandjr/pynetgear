@@ -46,7 +46,22 @@ class Netgear(object):
         self.logged_in = success
 
         return self.logged_in
-
+    
+    def get_network_settings(self):
+        """
+        Return the network settings
+        """
+        _LOGGER.info("Get Network Settings")
+        success, response = self._make_request(
+            ACTION_GET_NETWORK_SETTIGNS,
+            SOAP_NETWORK_SETTINGS.format(session_id=SESSION_ID))
+        
+        if not success:
+            return None
+        data = re.search(r"<NewWPAPassphrase>(.*)</NewWAPPassphrase>",
+                         response).group(1).split(";")
+        return data
+    
     def get_attached_devices(self):
         """
         Return list of connected devices to the router.
@@ -153,6 +168,7 @@ def convert(value, to_type, default=None):
 ACTION_LOGIN = "urn:NETGEAR-ROUTER:service:ParentalControl:1#Authenticate"
 ACTION_GET_ATTACHED_DEVICES = \
     "urn:NETGEAR-ROUTER:service:DeviceInfo:1#GetAttachDevice"
+ACTION_GET_NETWORK_SETTINGS = "urn:NETGEAR-ROUTER:service:WLANConfiguration:1#GetWPASecurityKeys"
 
 # Until we know how to generate it, give the one we captured
 SESSION_ID = "A7D88AE69687E58D9A00"
@@ -182,6 +198,19 @@ SOAP_ATTACHED_DEVICES = """<?xml version="1.0" encoding="utf-8" standalone="no"?
 <SOAP-ENV:Body>
 <M1:GetAttachDevice xmlns:M1="urn:NETGEAR-ROUTER:service:DeviceInfo:1">
 </M1:GetAttachDevice>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+"""
+SOAP_NETWORK_SETTINGS = """<SOAP-ENV:Envelope xmlns:SOAPSDK1="http://www.w3.org/2001/XMLSchema" 
+  xmlns:SOAPSDK2="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:SOAPSDK3="http://schemas.xmlsoap.org/soap/encoding/" 
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Header>
+<SessionID>{session_id}</SessionID>
+</SOAP-ENV:Header>
+<SOAP-ENV:Body>
+<M1:GetWPASecurityKeys xmlns:M1="urn:NETGEAR-ROUTER:service:WLANConfiguration:1">
+</M1:GetWPASecurityKeys>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 """
